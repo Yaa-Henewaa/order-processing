@@ -24,7 +24,7 @@ const protect = asyncHandler(async (req: AuthRequest, res: Response, next: NextF
       throw new Error('User not found');
     }
 
-    req.user = user; // No more TypeScript error
+    req.user = user; 
     next();
   } catch (error) {
     res.status(401);
