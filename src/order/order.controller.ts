@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import { validationResult } from 'express-validator';
 import { OrderSchema } from './order.schema';
+import { User } from '@prisma/client';
 import { AppError } from '../middleware/appError';
 import {
   createOrder,
@@ -11,8 +12,10 @@ import {
   cancelOrder,
 } from './order.service';
 
+
+
 export const createOrderHandler = [
-  ...OrderSchema.createOrder(), // Changed from createOrder() to create()
+  ...OrderSchema.createOrder(), 
   asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -43,8 +46,11 @@ export const processPaymentHandler = [
       throw new AppError(400, 'Validation Error', errors.array());
     }
 
-    const { orderId } = req.params;
-    const { amount } = req.body;
+    const{params, body} = req;
+    const {orderId} = params;
+    const {amount} = body;
+
+    
 
     const result = await processPayment({ orderId, amount });
 
@@ -60,15 +66,19 @@ export const processPaymentHandler = [
 ];
 
 export const getOrderHandler = asyncHandler(async (req: Request, res: Response) => {
-  const { id } = req.params;
+    
+    const {params,user} = req;
+    const { id } = params;
+    const { id: userId } = user!;
+  
   const order = await getOrder(id);
 
   if (!order) {
     throw new AppError(404, 'Order not found');
   }
 
-  // Check if user has permission to view this order
-  if (order.userId !== req.user!.id) {
+  
+  if (order.userId !== userId) {
     throw new AppError(403, 'Forbidden: You do not have permission to view this order');
   }
 
@@ -82,11 +92,11 @@ export const getUserOrdersHandler = asyncHandler(async (req: Request, res: Respo
 });
 
 export const cancelOrderHandler = [
-  ...OrderSchema.cancelOrder(), // Changed from cancelOrder() to cancel()
+  ...OrderSchema.cancelOrder(), 
   asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
     
-    // First check if order belongs to user
+  
     const order = await getOrder(id);
     if (!order) {
       throw new AppError(404, 'Order not found');

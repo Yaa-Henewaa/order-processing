@@ -11,7 +11,7 @@ import {
 export const createOrder = async (params: CreateOrderParams): Promise<OrderResult> => {
   try {
     return await prisma.$transaction(async (tx) => {
-      // 1. Verify products and calculate total
+      // Verifying products and calculate total
       let totalAmount = 0;
       const orderItems: {
         productId: string;
@@ -19,7 +19,7 @@ export const createOrder = async (params: CreateOrderParams): Promise<OrderResul
         priceAtOrder: number;
       }[] = [];
 
-      // Check product availability and calculate total
+      // Checking product availability and calculate total
       for (const item of params.items) {
         const product = await tx.product.findUnique({
           where: { id: item.productId },
@@ -42,12 +42,12 @@ export const createOrder = async (params: CreateOrderParams): Promise<OrderResul
         });
       }
 
-      // 2. Create the order
+      //Creatin the order
       const order = await tx.order.create({
         data: {
           userId: params.userId,
           totalAmount,
-          status: OrderStatus.PENDING, // Assuming you have an enum for order status
+          status: OrderStatus.PENDING, 
           paymentStatus: PaymentStatus.PENDING,
           items: {
             create: orderItems
@@ -62,7 +62,7 @@ export const createOrder = async (params: CreateOrderParams): Promise<OrderResul
         },
       });
 
-      // 3. Update product stocks
+      //Updating product stocks
       for (const item of params.items) {
         await tx.product.update({
           where: { id: item.productId },
@@ -74,8 +74,7 @@ export const createOrder = async (params: CreateOrderParams): Promise<OrderResul
         });
       }
 
-      // The order returned from Prisma already matches OrderWithItems structure
-      // due to the include clause, so no casting needed
+
       return {
         success: true,
         order,
@@ -91,10 +90,10 @@ export const createOrder = async (params: CreateOrderParams): Promise<OrderResul
 
 export const processPayment = async (params: ProcessPaymentParams): Promise<PaymentResult> => {
   try {
-    // Simulate payment processing (replace with real payment gateway in production)
+    
     const paymentSuccess = Math.random() > 0.2; // 80% success rate
     
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
+    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulated delay
 
     if (paymentSuccess) {
       await prisma.order.update({
@@ -120,7 +119,7 @@ export const processPayment = async (params: ProcessPaymentParams): Promise<Paym
 
       return {
         success: false,
-        error: 'Payment declined by bank',
+        error: 'Payment declined',
       };
     }
   } catch (error) {
@@ -144,7 +143,7 @@ export const getOrder = async (id: string): Promise<OrderWithItems | null> => {
       },
     });
 
-    // Prisma returns the correct type due to include, or null if not found
+   
     return order;
   } catch (error) {
     console.error('Error fetching order:', error);
@@ -168,7 +167,7 @@ export const getUserOrders = async (userId: string): Promise<OrderWithItems[]> =
       },
     });
 
-    // Prisma returns the correct type due to include
+   
     return orders;
   } catch (error) {
     console.error('Error fetching user orders:', error);
@@ -178,7 +177,7 @@ export const getUserOrders = async (userId: string): Promise<OrderWithItems[]> =
 
 export const cancelOrder = async (id: string): Promise<OrderResult> => {
   try {
-    // First check if order exists and can be cancelled
+  
     const existingOrder = await prisma.order.findUnique({
       where: { id },
       select: { status: true, paymentStatus: true },
@@ -205,9 +204,9 @@ export const cancelOrder = async (id: string): Promise<OrderResult> => {
       };
     }
 
-    // Cancel the order and potentially restore stock
+    // Cancel the order and restore stock
     const result = await prisma.$transaction(async (tx) => {
-      // Update order status
+      
       const cancelledOrder = await tx.order.update({
         where: { id },
         data: {

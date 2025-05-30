@@ -1,15 +1,14 @@
-// types/express.d.ts
-import { User } from './user';
+import { Request } from 'express';
+import { User } from '@prisma/client';
+
+export interface AuthRequest extends Request {
+  user?: Pick<User, 'id' | 'name' | 'email' | 'isAdmin'>;
+}
 
 declare global {
   namespace Express {
-  interface Request {
-    user?: {
-      id: string;
-      name: string;
-      email: string;
-      isAdmin: boolean;
-    };
-  }
+    interface Request {
+      user?: User;
+    }
   }
 }

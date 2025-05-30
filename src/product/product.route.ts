@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { protect, admin } from '../middleware/authMiddleware';
+import {protect,admin}  from '../middleware/authMiddleware';
 import {
   createProductHandler,
   updateProductHandler,

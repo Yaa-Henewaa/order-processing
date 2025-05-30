@@ -9,7 +9,6 @@ export type OrderWithItems = Prisma.OrderGetPayload<{
     };
   };
 }>;
-
 export interface CreateOrderParams {
   userId: string;
   items: {

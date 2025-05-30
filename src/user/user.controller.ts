@@ -3,7 +3,7 @@ import asyncHandler from "express-async-handler";
 import { validationResult } from "express-validator";
 import { accessToken, refreshToken } from "../utils/generateToken";
 import { UserSchema } from "./user.schema";
-import { createUser, loginUser } from "./user.service";
+import { createUser, loginUser, verifyEmail } from "./user.service";
 import { LoginRequest, RegisterRequest } from "./user.entities";
 
 export const loginHandler = [
@@ -74,3 +74,29 @@ export const registerHandler = [
     }
   })
 ];
+
+export const verifyEmailHandler = [asyncHandler(
+  async (req: Request, res: Response) => {
+    const { verificationCode } = req.body;
+
+    if (!verificationCode) {
+      res.status(400).json({ message: 'Verification code is required' });
+      return;
+    }
+
+    try {
+ 
+      await verifyEmail(verificationCode);
+
+
+
+      res.json({ message: 'Email verified successfully' });
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(400).json({ message: error.message });
+      } else {
+        res.status(400).json({ message: 'Email verification failed' });
+      }
+    }
+  } 
+)];
