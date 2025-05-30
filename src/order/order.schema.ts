@@ -3,15 +3,19 @@ import { body, param, ValidationChain } from "express-validator";
 export class OrderSchema {
   static createOrder(): ValidationChain[] {
     return [
-      body("items")
-        .isArray({ min: 1 })
-        .withMessage("At least one order item is required"),
-      body("items.*.productId")
-        .isInt({ min: 1 })
-        .withMessage("Product ID must be a positive integer"),
-      body("items.*.quantity")
-        .isInt({ min: 1 })
-        .withMessage("Quantity must be at least 1"),
+    body('items')
+      .isArray()
+      .withMessage('Items must be an array')
+      .notEmpty()
+      .withMessage('Order must contain at least one item'),
+    body('items.*.productId')
+      .isString()
+      .withMessage('Product ID must be a string')
+      .matches(/^[0-9a-fA-F-]{36}$/)  
+      .withMessage('Invalid product ID format'),
+    body('items.*.quantity')
+      .isInt({ min: 1 })
+      .withMessage('Quantity must be a positive integer')
     ];
   }
 

@@ -12,7 +12,7 @@ const router = Router();
 
 router
   .route('/')
-  .post(protect, admin, createProductHandler)
+  .post(protect, createProductHandler)
   .get(getAllProductsHandler);
 
 router
