@@ -28,7 +28,6 @@ export const createOrderHandler = [
       const totalAmount = await calculateOrderTotal(body.items);
 
       const paymentResult = await processPayment({
-        userId,
         amount: totalAmount,
       });
       if (!paymentResult.success) {
@@ -41,12 +40,13 @@ export const createOrderHandler = [
       const result = await createOrder({
         userId,
         items: body.items,
+        transactionId: paymentResult.transactionId,
       });
       if (!result.success) {
         throw new AppError(400, result.error || "Failed to create order");
       }
 
-      res.status(201).json(result.order);
+      res.status(201).json({order: result.order,transactionId: paymentResult.transactionId});
     } catch (error) {
       res.status(400).json({
         error: error instanceof Error ? error.message : "Order creation failed",

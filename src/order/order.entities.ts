@@ -11,14 +11,15 @@ export type OrderWithItems = Prisma.OrderGetPayload<{
 }>;
 export interface CreateOrderParams {
   userId: string;
-  items: {
+  items: Array<{
     productId: string;
     quantity: number;
-  }[];
+  }>;
+  transactionId?: string; 
 }
 
 export interface ProcessPaymentParams {
-  userId: string;
+  orderId?: string;
   amount: number;
 }
 
