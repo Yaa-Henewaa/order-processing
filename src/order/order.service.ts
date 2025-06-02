@@ -8,45 +8,45 @@ import {
   ProcessPaymentParams
 } from './order.entities';
 
+
+export const calculateOrderTotal = async (items: Array<{ productId: string; quantity: number }>) => {
+  let total = 0;
+  
+  for (const item of items) {
+    const product = await prisma.product.findUnique({
+      where: { id: item.productId },
+      select: { price: true, stock: true }
+    });
+
+    if (!product) throw new Error(`Product ${item.productId} not found`);
+    if (product.stock < item.quantity) throw new Error(`Insufficient stock`);
+
+    total += product.price * item.quantity;
+  }
+
+  return total;
+};
+
 export const createOrder = async (params: CreateOrderParams): Promise<OrderResult> => {
   try {
     return await prisma.$transaction(async (tx) => {
       // Verifying products and calculate total
-      let totalAmount = 0;
+     
       const orderItems: {
         productId: string;
         quantity: number;
         priceAtOrder: number;
       }[] = [];
 
-      // Checking product availability and calculate total
-      for (const item of params.items) {
-        const product = await tx.product.findUnique({
-          where: { id: item.productId },
-        });
 
-        if (!product) {
-          throw new Error(`Product with ID ${item.productId} not found`);
-        }
 
-        if (product.stock < item.quantity) {
-          throw new Error(`Insufficient stock for product ${product.name}`);
-        }
-
-        totalAmount += product.price * item.quantity;
-
-        orderItems.push({
-          productId: product.id,
-          quantity: item.quantity,
-          priceAtOrder: product.price,
-        });
-      }
+      
 
       //Creatin the order
       const order = await tx.order.create({
         data: {
           userId: params.userId,
-          totalAmount,
+          totalAmount: await calculateOrderTotal(params.items),
           status: OrderStatus.PENDING, 
           paymentStatus: PaymentStatus.PENDING,
           items: {
@@ -97,7 +97,7 @@ export const processPayment = async (params: ProcessPaymentParams): Promise<Paym
 
     if (paymentSuccess) {
       await prisma.order.update({
-        where: { id: params.orderId },
+        where: { id: params.userId },
         data: {
           paymentStatus: PaymentStatus.PAID,
           status: OrderStatus.COMPLETED, 
@@ -110,7 +110,7 @@ export const processPayment = async (params: ProcessPaymentParams): Promise<Paym
       };
     } else {
       await prisma.order.update({
-        where: { id: params.orderId },
+        where: { id: params.userId },
         data: {
           paymentStatus: PaymentStatus.FAILED,
           status: OrderStatus.FAILED,

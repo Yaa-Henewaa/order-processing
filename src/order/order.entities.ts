@@ -18,7 +18,7 @@ export interface CreateOrderParams {
 }
 
 export interface ProcessPaymentParams {
-  orderId: string;
+  userId: string;
   amount: number;
 }
 

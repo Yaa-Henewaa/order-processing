@@ -15,7 +15,8 @@ export class OrderSchema {
       .withMessage('Invalid product ID format'),
     body('items.*.quantity')
       .isInt({ min: 1 })
-      .withMessage('Quantity must be a positive integer')
+      .withMessage('Quantity must be a positive integer'),
+
     ];
   }
 

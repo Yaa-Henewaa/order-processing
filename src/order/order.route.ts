@@ -2,7 +2,6 @@ import { Router } from 'express';
 import {protect}  from '../middleware/authMiddleware';
 import {
   createOrderHandler,
-  processPaymentHandler,
   getOrderHandler,
   getUserOrdersHandler,
   cancelOrderHandler
@@ -20,8 +19,6 @@ router
   .get(protect, getOrderHandler)
   .post(protect, cancelOrderHandler);
 
-router
-  .route('/:orderId/payment')
-  .post(protect, processPaymentHandler);
+
 
 export { router as orderRoutes };
